@@ -29,7 +29,7 @@ DATA:
     SAMPLE_PER_EPOCH: 60000
   VAL:
     DATASETS_NAME:
-    - 
+    - GOT10K_votval
     DATASETS_RATIO:
     - 1
     SAMPLE_PER_EPOCH: 10000
@@ -39,7 +39,7 @@ MODEL:
     PRETRAINED: True
     PRETRAINED_PATH: '/kaggle/input/models/huythedreamer/mixformer-vit-base-online/pytorch/default/1/mixformer_vit_base_online.pth.tar'
   HEAD_FREEZE_BN: True
-  PRETRAINED_STAGE1: True
+  PRETRAINED_STAGE1: False
   HEAD_TYPE: CORNER_UP
   HIDDEN_DIM: 768
   PREDICT_MASK: false
