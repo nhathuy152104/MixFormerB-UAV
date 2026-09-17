@@ -188,7 +188,10 @@ def get_optimizer_scheduler(net, cfg):
                     print(n)
     else:
         # set remove layers no grad
-        remove_params = [f"blocks.{idx}." for idx in cfg.TRAIN.REMOVE_LAYERS]
+        remove_params = [
+            f"blocks.{idx}."
+            for idx in getattr(cfg.TRAIN, 'REMOVE_LAYERS', [])
+        ]
         for n, p in net.named_parameters():
             if any(
                 (s in n) for s in remove_params
