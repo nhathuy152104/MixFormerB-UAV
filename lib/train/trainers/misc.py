@@ -1,6 +1,5 @@
 import torch
 from math import inf
-inf = math.inf
 class NativeScalerWithGradNormCount:
     state_dict_key = "amp_scaler"
 
