@@ -98,12 +98,14 @@ def main():
     parser.add_argument('--stage1_model', type=str, default=None, help='stage1 model used to train SPM.')
 
     args = parser.parse_args()
-    print("hhhh",args.local_rank)
-    # if args.local_rank != -1:
-    #     dist.init_process_group(backend='nccl')
-    #     torch.cuda.set_device(args.local_rank)
-    # else:
-    torch.cuda.set_device(0)
+    print("local_rank =", args.local_rank)
+    print("NCCL =", dist.is_nccl_available())
+    args = parser.parse_args()
+    if args.local_rank != -1:
+        dist.init_process_group(backend='nccl')
+        torch.cuda.set_device(args.local_rank)
+    else:
+        torch.cuda.set_device(0)
     run_training(args.script, args.config, cudnn_benchmark=args.cudnn_benchmark,
                  local_rank=args.local_rank, save_dir=args.save_dir, base_seed=args.seed,
                  use_lmdb=args.use_lmdb, script_name_prv=args.script_prv, config_name_prv=args.config_prv,
