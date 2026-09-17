@@ -17,11 +17,7 @@ import torch.distributed as dist
 from torch import Tensor
 
 # needed due to empty tensor bug in pytorch and torchvision 0.5
-import torchvision
-if float(torchvision.__version__[:3]) < 0.7:
-    def _new_empty_tensor(x, shape):
-        return x.new_empty(shape)
-    from torchvision.ops.misc import _output_size
+
 
 
 class SmoothedValue(object):
