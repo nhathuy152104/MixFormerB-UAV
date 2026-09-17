@@ -81,11 +81,11 @@ def main():
     parser.add_argument('--config', type=str, required=True, help="Name of the config file.")
     parser.add_argument('--cudnn_benchmark', type=bool, default=True, help='Set cudnn benchmark on (1) or off (0) (default is on).')
     parser.add_argument(
-    '--local_rank', '--local-rank',
-    default=-1,
-    type=int,
-    help='local rank for distributed training'
-)
+        '--local_rank', '--local-rank',
+        default = -1,
+        type=int,
+        help='local rank for distributed training'
+    )
     parser.add_argument('--save_dir', type=str, help='the directory to save checkpoints and logs')
     parser.add_argument('--seed', type=int, default=42, help='seed for random numbers')
     parser.add_argument('--use_lmdb', type=int, choices=[0, 1], default=0)  # whether datasets are in lmdb format
@@ -98,6 +98,7 @@ def main():
     parser.add_argument('--stage1_model', type=str, default=None, help='stage1 model used to train SPM.')
 
     args = parser.parse_args()
+    print("hhhh",args.local_rank)
     # if args.local_rank != -1:
     #     dist.init_process_group(backend='nccl')
     #     torch.cuda.set_device(args.local_rank)
