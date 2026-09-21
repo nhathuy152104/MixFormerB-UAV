@@ -91,8 +91,6 @@ def build_dataloaders(cfg, settings):
     transform_train = tfm.Transform(
         tfm.ToTensorAndJitter(0.2),
         tfm.RandomHorizontalFlip_Norm(probability=0.5),
-        # Xoay ngẫu nhiên trong khoảng -15 đến 15 độ
-        tfm.RandomRotation_Norm(degrees=[-15, 15]), 
         tfm.Normalize(mean=cfg.DATA.MEAN, std=cfg.DATA.STD)
     )
 

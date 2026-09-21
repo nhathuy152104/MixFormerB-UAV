@@ -191,8 +191,8 @@ class BaseTrainer:
             raise TypeError
 
         # Load network
-        checkpoint_dict = torch.load(checkpoint_path, map_location='cpu')
-
+        checkpoint_dict = torch.load("/kaggle/input/models/huythedreamer/mixformer-finetune-uav/pytorch/default/1/MixFormer_ep0010.pth.tar", map_location='cpu')
+        print("Loaded checkpoint")
         assert net_type == checkpoint_dict['net_type'], 'Network is not of correct type.'
 
         if fields is None:
