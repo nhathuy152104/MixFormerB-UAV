@@ -5,7 +5,7 @@ DATA:
   - 0.456
   - 0.406
   SEARCH:
-    CENTER_JITTER: 4.5
+    CENTER_JITTER: 3.0
     FACTOR: 3.0
     SCALE_JITTER: 0.5
     SIZE: 288
