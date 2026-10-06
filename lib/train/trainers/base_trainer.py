@@ -250,7 +250,7 @@ class BaseTrainer:
         if isinstance(checkpoint, str):
             # checkpoint is the path
             if os.path.isdir(checkpoint):
-                checkpoint_list = ["/kaggle/input/models/huythedreamer/mixformer-finetune-uav/pytorch/default/1/MixFormer_ep0010.pth.tar"]
+                checkpoint_list = ["/kaggle/input/models/huythedreamer/mixformer-finetune-uav/pytorch/default/1/MixFormer_ep0015.pth.tar"]
                 if checkpoint_list:
                     checkpoint_path = checkpoint_list[-1]
                 else:
