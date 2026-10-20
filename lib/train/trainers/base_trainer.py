@@ -167,7 +167,6 @@ class BaseTrainer:
         if checkpoint is None:
             # Load most recent checkpoint
             checkpoint_list = ["/mnt/DATA/huy/MixFormerB-UAV/output/checkpoints/MixFormer_ep0010.pth.tar"]
-            checkpoint_list = []
             if checkpoint_list:
                 checkpoint_path = checkpoint_list[-1]
             else:
