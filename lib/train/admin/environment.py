@@ -74,7 +74,7 @@ def create_default_local_file_ITP_train(workspace_dir, data_dir):
         'youtubevos_dir': empty_str,
         'uavantiuav_dir': os.path.join(data_dir, 'uav-anti-uav-processed'),
         'uav123_dir': os.path.join(data_dir, 'uav123'),
-        'uav300_dir': os.path.join(data_dir, 'Data_proccessed')
+        'anti300_dir': os.path.join(data_dir, 'Data_proccessed')
         })
 
     comment = {'workspace_dir': 'Base directory for saving network checkpoints.',
