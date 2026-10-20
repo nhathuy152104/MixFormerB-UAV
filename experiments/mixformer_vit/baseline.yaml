@@ -22,7 +22,7 @@ DATA:
   TRAIN:
     DATASETS_NAME:
     - GOT10K_train_full
-    - UAVANTIUAV
+    - UAVAntiUAV
     - ANTI300
     - UAV123
 
