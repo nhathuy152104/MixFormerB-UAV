@@ -93,7 +93,7 @@ class BaseTrainer:
                         self.lr_scheduler.step(epoch - 1)
                     # only save the last 10 checkpoints
                     save_every_epoch = getattr(self.settings, "save_every_epoch", False)
-                    if epoch > (max_epochs - 10) or save_every_epoch or epoch % 5 == 0:
+                    if epoch > (max_epochs - 5) or  epoch % 50 == 0:
                         if self._checkpoint_dir:
                             if self.settings.local_rank in [-1, 0]:
                                 self.save_checkpoint()
@@ -166,7 +166,7 @@ class BaseTrainer:
 
         if checkpoint is None:
             # Load most recent checkpoint
-            # checkpoint_list = ["/kaggle/input/models/huythedreamer/mixformer-finetune-uav/pytorch/default/3/MixFormer_ep0015.pth.tar"]
+            checkpoint_list = ["/mnt/DATA/huy/MixFormerB-UAV/output/checkpoints/MixFormer_ep0010.pth.tar"]
             checkpoint_list = []
             if checkpoint_list:
                 checkpoint_path = checkpoint_list[-1]
@@ -251,7 +251,7 @@ class BaseTrainer:
         if isinstance(checkpoint, str):
             # checkpoint is the path
             if os.path.isdir(checkpoint):
-                # checkpoint_list = ["/kaggle/input/models/huythedreamer/mixformer-finetune-uav/pytorch/default/3/MixFormer_ep0015.pth.tar"]
+                checkpoint_list = ["/mnt/DATA/huy/MixFormerB-UAV/output/checkpoints/MixFormer_ep0010.pth.tar"]
                 checkpoint_list = []
                 if checkpoint_list:
                     checkpoint_path = checkpoint_list[-1]
