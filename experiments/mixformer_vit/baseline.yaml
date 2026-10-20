@@ -21,7 +21,7 @@ DATA:
     NUMBER: 2
   TRAIN:
     DATASETS_NAME:
-    - ANTI300
+    - GOT10K_train_full
 
     DATASETS_RATIO:
     - 1

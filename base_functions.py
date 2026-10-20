@@ -1,7 +1,7 @@
 import torch
 from torch.utils.data.distributed import DistributedSampler
 # datasets related
-from lib.train.dataset import Lasot, Got10k, MSCOCOSeq, ImagenetVID, TrackingNet, UAVAntiUAV
+from lib.train.dataset import Lasot, Got10k, MSCOCOSeq, ImagenetVID, TrackingNet, UAVAntiUAV, UAV123, ANTI300
 from lib.train.dataset import Lasot_lmdb, Got10k_lmdb, MSCOCOSeq_lmdb, ImagenetVID_lmdb, TrackingNet_lmdb
 from lib.train.data import sampler, opencv_loader, processing, LTRLoader
 import lib.train.data.transforms as tfm
@@ -28,7 +28,7 @@ def names2datasets(name_list: list, settings, image_loader):
     assert isinstance(name_list, list)
     datasets = []
     for name in name_list:
-        assert name in ["LASOT", "GOT10K_vottrain", "GOT10K_votval", "GOT10K_train_full", "COCO17", "VID", "TRACKINGNET", "UAVAntiUAV"]
+        assert name in ["LASOT", "GOT10K_vottrain", "GOT10K_votval", "GOT10K_train_full", "COCO17", "VID", "TRACKINGNET", "UAVAntiUAV", "UAV123", "ANTI300"]
         if name == "LASOT":
             if settings.use_lmdb:
                 print("Building lasot dataset from lmdb")
@@ -80,6 +80,12 @@ def names2datasets(name_list: list, settings, image_loader):
             else:
                 # raise ValueError("NOW WE CAN ONLY USE TRACKINGNET FROM LMDB")
                 datasets.append(UAVAntiUAV(settings.env.uavantiuav_dir, image_loader=image_loader))
+        if name == "UAV123":
+            datasets.append(UAV123(settings.env.uav123_dir, image_loader=image_loader))
+        if name == "ANTI300":
+            datasets.append(ANTI300(settings.env.anti300_dir, image_loader=image_loader))
+
+
     return datasets
 
 
@@ -88,9 +94,11 @@ def build_dataloaders(cfg, settings):
     transform_joint = tfm.Transform(tfm.ToGrayscale(probability=0.05),
                                     tfm.RandomHorizontalFlip(probability=0.5))
 
-    transform_train = tfm.Transform(tfm.ToTensorAndJitter(0.2),
-                                    tfm.RandomHorizontalFlip_Norm(probability=0.5),
-                                    tfm.Normalize(mean=cfg.DATA.MEAN, std=cfg.DATA.STD))
+    transform_train = tfm.Transform(
+        tfm.ToTensorAndJitter(0.2),
+        tfm.RandomHorizontalFlip_Norm(probability=0.5),
+        tfm.Normalize(mean=cfg.DATA.MEAN, std=cfg.DATA.STD)
+    )
 
     transform_val = tfm.Transform(tfm.ToTensor(),
                                   tfm.Normalize(mean=cfg.DATA.MEAN, std=cfg.DATA.STD))
@@ -188,7 +196,10 @@ def get_optimizer_scheduler(net, cfg):
                     print(n)
     else:
         # set remove layers no grad
-        remove_params = [f"blocks.{idx}." for idx in cfg.TRAIN.REMOVE_LAYERS]
+        remove_params = [
+            f"blocks.{idx}."
+            for idx in getattr(cfg.TRAIN, 'REMOVE_LAYERS', [])
+        ]
         for n, p in net.named_parameters():
             if any(
                 (s in n) for s in remove_params
