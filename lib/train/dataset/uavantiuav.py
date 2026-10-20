@@ -24,7 +24,7 @@ class UAVAntiUAV(BaseVideoDataset):
         super().__init__('UAVAntiUAV', root, image_loader)
         print("Dataset root:", self.root)
 
-        anno_files = sorted(glob.glob(os.path.join(self.root, '*/groundtruth_rect.txt')))
+        anno_files = sorted(glob.glob(os.path.join(self.root, 'train/*')))
         print("Found GT", len(anno_files))
 
         self.sequence_list = self._get_sequence_list()
@@ -73,23 +73,25 @@ class UAVAntiUAV(BaseVideoDataset):
     def get_sequences_in_class(self, class_name):
         return self.seq_per_class[class_name]
     def _get_sequence_list(self):
-        anno_files = sorted(glob.glob(os.path.join(self.root, '*/groundtruth_rect.txt')))
+        anno_files = sorted(glob.glob(os.path.join(self.root, 'train/*')))
 
-        seq_dirs = [osp.dirname(f) for f in anno_files]
-        seq_names = [osp.basename(d) for d in seq_dirs]
-        print(len(seq_dirs))
-        return seq_names
+        seq_names = [osp.basename(d) for d in anno_files]
+        print(len(seq_names))
+        return seq_names    
 
     def _read_bb_anno(self, seq_path):
-        bb_anno_file = os.path.join(seq_path, 'groundtruth_rect.txt')
-
+        bb_anno_file = os.path.join(
+            self.root,
+            'annotations/train',
+            self.sequence_list[seq_path] + ".txt"
+        )
         ground_truth_rect = np.loadtxt(bb_anno_file, delimiter=',')
         gt = np.array(ground_truth_rect, dtype = np.float64)
 
         return torch.tensor(gt)
 
     def _read_target_visible(self, seq_path):
-        absent_file = os.path.join(seq_path, 'absent.txt')
+        absent_file = os.path.join(self.root, 'annotations/train', self.sequence_list[seq_path] + '_absent.txt')
 
         absent = np.loadtxt(
             absent_file,
@@ -109,14 +111,13 @@ class UAVAntiUAV(BaseVideoDataset):
         return target_visible, visible_ratio
 
     def _get_sequence_path(self, seq_id):
-        return os.path.join(self.root, self.sequence_list[seq_id])
+        return os.path.join(self.root, 'train', self.sequence_list[seq_id])
 
-    def get_sequence_info(self, seq_id):
-        seq_path = self._get_sequence_path(seq_id)  
-        bbox = self._read_bb_anno(seq_path)
+    def get_sequence_info(self, seq_id): 
+        bbox = self._read_bb_anno(seq_id)
 
         valid = (bbox[:, 2] > 0) & (bbox[:, 3] > 0)
-        visible, visible_ratio = self._read_target_visible(seq_path)
+        visible, visible_ratio = self._read_target_visible(seq_id)
         visible = visible & valid.byte()
 
         return {'bbox': bbox, 'valid': valid, 'visible': visible, 'visible_ratio': visible_ratio}
