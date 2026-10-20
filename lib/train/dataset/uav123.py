@@ -31,7 +31,7 @@ class UAV123(BaseVideoDataset):
 
         # Sử dụng danh sách 123 sequences chuẩn mực từ benchmark
         self.sequence_info_list = UAV123Dataset._get_sequence_info_list(None)
-
+        print(len(self.sequence_info_list))
         self.sequence_list = [s['name'] for s in self.sequence_info_list]
         self.class_list = sorted(list(set(s['object_class'] for s in self.sequence_info_list)))
 

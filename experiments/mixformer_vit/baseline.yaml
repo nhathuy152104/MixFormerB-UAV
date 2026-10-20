@@ -21,7 +21,7 @@ DATA:
     NUMBER: 2
   TRAIN:
     DATASETS_NAME:
-    - UAVAntiUAV
+    - UAV123
 
     DATASETS_RATIO:
     - 1
