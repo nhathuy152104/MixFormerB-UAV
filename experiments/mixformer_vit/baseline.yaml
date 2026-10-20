@@ -21,7 +21,7 @@ DATA:
     NUMBER: 2
   TRAIN:
     DATASETS_NAME:
-    - UAV123
+    - ANTI300
 
     DATASETS_RATIO:
     - 1
