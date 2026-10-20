@@ -9,7 +9,7 @@ from lib.train.admin import env_settings
 from lib.test.evaluation.uav123dataset import UAV123Dataset
 
 
-class Uav123(BaseVideoDataset):
+class UAV123(BaseVideoDataset):
     """ UAV123 training dataset loader for LTR/PyTracking framework.
 
     Publication:
