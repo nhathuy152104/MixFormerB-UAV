@@ -11,3 +11,5 @@ from .coco_seq_lmdb import MSCOCOSeq_lmdb
 from .tracking_net_lmdb import TrackingNet_lmdb
 from .tnl2k import TNL2k
 from .uavantiuav import UAVAntiUAV
+from .uav123 import UAV123Dataset
+from .anti300 import ANTI300

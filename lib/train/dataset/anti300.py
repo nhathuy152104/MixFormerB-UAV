@@ -1,147 +1,105 @@
-import csv
-import os
-import os.path
-import random
-from collections import OrderedDict
-
-import glob 
-import os.path as osp
-import json
-
-import numpy as np
-import pandas
 import torch
-
-from lib.train.admin import env_settings      
+import os
+import numpy as np
+from collections import OrderedDict
 from lib.train.data import jpeg4py_loader
 from .base_video_dataset import BaseVideoDataset
+from lib.train.admin import env_settings
 
 
-class Anti300(BaseVideoDataset):
 
-    def __init__(self, root = None, image_loader = jpeg4py_loader, split = None, seq_ids = None, data_fraction = None):
-        root = env_settings().uavantiuav if root is None else root
-        super().__init__('Anti300', root, image_loader)
-        print("Dataset root:", self.root)
+class ANTI300(BaseVideoDataset):
+    """ ANTI_300 dataset wrapper for training """
+    def __init__(self, root=None, image_loader=jpeg4py_loader, modality='all', split='train'):
+        root = env_settings().anti300_dir if root is None else root
+        super().__init__('ANTI_300', root, image_loader)
+        
+        self.split = split
+        self.modality = modality
 
-        anno_files = sorted(glob.glob(os.path.join(self.root, '*/groundtruth_rect.txt')))
-        print("Found GT", len(anno_files))
+        # Xử lý modality: ưu tiên anti300_rgb hoặc anti300_ir
+        mod_dir = f'anti300_{modality}' if os.path.isdir(os.path.join(root, f'anti300_{modality}')) else 'anti300_rgb'
 
+        # Xử lý split: hỗ trợ fallback giữa 'val' và 'valid'
+        split_name = split
+        if not os.path.isdir(os.path.join(root, mod_dir, split_name)):
+            alt_split = 'valid' if split_name == 'val' else ('val' if split_name == 'valid' else None)
+            if alt_split and os.path.isdir(os.path.join(root, mod_dir, alt_split)):
+                split_name = alt_split
+
+        self.dataset_dir = os.path.join(root, mod_dir, split_name)
+        self.anno_dir = os.path.join(root, mod_dir, 'annotations', split_name)
+
+        # List all sequences in the split directory
         self.sequence_list = self._get_sequence_list()
+        print(f"ANTI_300 ({self.modality} - {self.split}): {len(self.sequence_list)} sequences")
+        if len(self.sequence_list) == 0:
+            print(f"[ANTI300] WARNING: 0 sequences found in {self.dataset_dir}! Check dataset directory and structure.")
 
-        if data_fraction is not None:
-            num_sequences = int(len(self.sequence_list) * data_fraction)
-            self.sequence_list = random.sample(self.sequence_list,  num_sequences)
-
-        self.sequence_meta_info = self._load_meta_info()
-        self.seq_per_class = self._build_seq_per_class()
-
-        self.class_list = list(self.seq_per_class.keys())
-        self.class_list.sort()
+    def _get_sequence_list(self):
+        if not os.path.isdir(self.dataset_dir):
+            return []
+        sequence_list = [d for d in os.listdir(self.dataset_dir) if os.path.isdir(os.path.join(self.dataset_dir, d))]
+        return sorted(sequence_list)
 
     def get_name(self):
-        return 'uavantiuav'
-
+        return f"ANTI_300_{self.modality}_{self.split}"
+    
     def has_class_info(self):
-        return True
-    
-    def has_occlusion_info(self):
-        return True
-    
-    def _load_meta_info(self):
-        sequence_meta_info = {s: self._read_meta(os.path.join(self.root, s)) for s in self.sequence_list}
-        return sequence_meta_info
-    def _read_meta(self, seq_path):
-        return OrderedDict({
-            'object_class_name': 'UAV',
-            'motion_class': None,
-            'major_class': None,
-            'root_class': None,
-            'motion_adverb': None
-        })
-    def _build_seq_per_class(self):
-        seq_per_class = {}
-        for i, s in enumerate(self.sequence_list):
-            object_class = self.sequence_meta_info[s]['object_class_name']
-            if object_class in seq_per_class:
-                seq_per_class[object_class].append(i)
-            else:
-                seq_per_class[object_class] = [i]
+        return False
 
-        return seq_per_class
+    def _read_bb_anno(self, seq_id):
+        video_name = self.sequence_list[seq_id]
+        anno_file = os.path.join(self.anno_dir, video_name + ".txt")
 
-    def get_sequences_in_class(self, class_name):
-        return self.seq_per_class[class_name]
-    def _get_sequence_list(self):
-        anno_files = sorted(glob.glob(os.path.join(self.root, '*/groundtruth_rect.txt')))
+        if not os.path.isfile(anno_file):
+            raise FileNotFoundError("Annotation file not found: {}".format(anno_file))
 
-        seq_dirs = [osp.dirname(f) for f in anno_files]
-        seq_names = [osp.basename(d) for d in seq_dirs]
-        print(len(seq_dirs))
-        return seq_names
-
-    def _read_bb_anno(self, seq_path):
-        bb_anno_file = os.path.join(seq_p   ath, 'groundtruth_rect.txt')
-
-        ground_truth_rect = np.loadtxt(bb_anno_file, delimiter=',')
-        gt = np.array(ground_truth_rect, dtype = np.float64)
-
-        return torch.tensor(gt)
-
-    def _read_target_visible(self, seq_path):
-        absent_file = os.path.join(seq_path, 'absent.txt')
-
-        absent = np.loadtxt(
-            absent_file,
-            dtype = np.int64
-        )
-        absent = np.asarray(absent).reshape(-1)
-
-        target_visible = 1 - absent
-
-        target_visible = torch.tensor(
-            target_visible,
-            dtype = torch.uint8
-        )
-
-        visible_ratio = target_visible.float()
-
-        return target_visible, visible_ratio
-
-    def _get_sequence_path(self, seq_id):
-        return os.path.join(self.root, self.sequence_list[seq_id])
+        with open(anno_file, "r") as f:
+            lines = f.readlines()
+            bb_anno = []
+            for line in lines:
+                line = line.strip()
+                if line:
+                    # Groundtruth usually has space or comma separated values
+                    delimiter = ',' if ',' in line else ' '
+                    coords = list(map(float, line.split(delimiter)))
+                    # Take first 4 values (x, y, w, h)
+                    bb_anno.append(coords[:4])
+        return torch.tensor(bb_anno, dtype=torch.float32)
 
     def get_sequence_info(self, seq_id):
-        seq_path = self._get_sequence_path(seq_id)  
-        bbox = self._read_bb_anno(seq_path)
-
+        bbox = self._read_bb_anno(seq_id)
         valid = (bbox[:, 2] > 0) & (bbox[:, 3] > 0)
-        visible, visible_ratio = self._read_target_visible(seq_path)
-        visible = visible & valid.byte()
+        visible = valid.clone().byte()
+        return {'bbox': bbox, 'valid': valid, 'visible': visible}
 
-        return {'bbox': bbox, 'valid': valid, 'visible': visible, 'visible_ratio': visible_ratio}
-    def _get_frame_path(self, seq_path, frame_id):
-        return os.path.join(seq_path, '{:06}.jpg'.format(frame_id + 1))
+    def _get_frame(self, seq_id, frame_id):
+        video_name = self.sequence_list[seq_id]
+        frame_id_str = str(frame_id + 1).zfill(6) # 000001.jpg format (1-indexed based on process_demo script)
+        frame_path = os.path.join(self.dataset_dir, video_name, frame_id_str + ".jpg")
 
-    def _get_frame(self, seq_path, frame_id):
-        return self.image_loader(self._get_frame_path(seq_path, frame_id))
-
+        if not os.path.isfile(frame_path):
+            raise FileNotFoundError("Frame file not found: {}".format(frame_path))
+        return self.image_loader(frame_path)
+    
     def get_class_name(self, seq_id):
-        obj_meta = self.sequence_meta_info[self.sequence_list[seq_id]]
+        return 'uav' # Fixed class for UAV datasets
 
-        return obj_meta['object_class_name']
+    def get_frames(self, seq_id, frame_ids, anno=None):
+        frame_list = [self._get_frame(seq_id, f) for f in frame_ids]
 
-    def get_frames(self, seq_id, frame_ids, anno = True):
-        seq_path = self._get_sequence_path(seq_id)
-        obj_meta = self.sequence_meta_info[self.sequence_list[seq_id]]
-
-        frame_list = [self._get_frame(seq_path, f_id) for f_id in frame_ids]
-
-        if anno is True:
+        if anno is None:
             anno = self.get_sequence_info(seq_id)
 
         anno_frames = {}
         for key, value in anno.items():
             anno_frames[key] = [value[f_id, ...].clone() for f_id in frame_ids]
 
-        return frame_list, anno_frames, obj_meta
+        object_meta = OrderedDict({'object_class_name': self.get_class_name(seq_id),
+                                   'motion_class': None,
+                                   'major_class': None,
+                                   'root_class': None,
+                                   'motion_adverb': None})
+
+        return frame_list, anno_frames, object_meta

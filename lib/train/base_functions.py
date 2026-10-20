@@ -1,7 +1,7 @@
 import torch
 from torch.utils.data.distributed import DistributedSampler
 # datasets related
-from lib.train.dataset import Lasot, Got10k, MSCOCOSeq, ImagenetVID, TrackingNet, UAVAntiUAV
+from lib.train.dataset import Lasot, Got10k, MSCOCOSeq, ImagenetVID, TrackingNet, UAVAntiUAV, UAV123Dataset, ANTI300
 from lib.train.dataset import Lasot_lmdb, Got10k_lmdb, MSCOCOSeq_lmdb, ImagenetVID_lmdb, TrackingNet_lmdb
 from lib.train.data import sampler, opencv_loader, processing, LTRLoader
 import lib.train.data.transforms as tfm
@@ -80,6 +80,12 @@ def names2datasets(name_list: list, settings, image_loader):
             else:
                 # raise ValueError("NOW WE CAN ONLY USE TRACKINGNET FROM LMDB")
                 datasets.append(UAVAntiUAV(settings.env.uavantiuav_dir, image_loader=image_loader))
+        if name == "UAV123":
+            datasets.append(UAV123Dataset(settings.env.uav123_dir, image_loader=image_loader))
+        if name == "ANTI300":
+            datasets.append(UAVAntiUAV(settings.env.anti300_dir, image_loader=image_loader))
+
+
     return datasets
 
 
