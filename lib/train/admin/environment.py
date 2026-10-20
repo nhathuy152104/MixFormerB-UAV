@@ -70,7 +70,7 @@ def create_default_local_file_ITP_train(workspace_dir, data_dir):
         'msra10k_dir': empty_str,
         'davis_dir': empty_str,
         'youtubevos_dir': empty_str,
-        'uavantiuav_dir': os.path.join(data_dir, 'uav-anti-uav_processed'),
+        'uavantiuav_dir': os.path.join(data_dir, 'uav-anti-uav-processed'),
 
         })
 

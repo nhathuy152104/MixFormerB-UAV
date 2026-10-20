@@ -166,7 +166,8 @@ class BaseTrainer:
 
         if checkpoint is None:
             # Load most recent checkpoint
-            checkpoint_list = ["/kaggle/input/models/huythedreamer/mixformer-finetune-uav/pytorch/default/3/MixFormer_ep0015.pth.tar"]
+            # checkpoint_list = ["/kaggle/input/models/huythedreamer/mixformer-finetune-uav/pytorch/default/3/MixFormer_ep0015.pth.tar"]
+            checkpoint_list = []
             if checkpoint_list:
                 checkpoint_path = checkpoint_list[-1]
             else:
@@ -250,7 +251,8 @@ class BaseTrainer:
         if isinstance(checkpoint, str):
             # checkpoint is the path
             if os.path.isdir(checkpoint):
-                checkpoint_list = ["/kaggle/input/models/huythedreamer/mixformer-finetune-uav/pytorch/default/3/MixFormer_ep0015.pth.tar"]
+                # checkpoint_list = ["/kaggle/input/models/huythedreamer/mixformer-finetune-uav/pytorch/default/3/MixFormer_ep0015.pth.tar"]
+                checkpoint_list = []
                 if checkpoint_list:
                     checkpoint_path = checkpoint_list[-1]
                 else:
