@@ -21,7 +21,7 @@ DATA:
     NUMBER: 2
   TRAIN:
     DATASETS_NAME:
-    - GOT10K_train_full
+    - COCO17
 
     DATASETS_RATIO:
     - 1
